@@ -1,54 +1,62 @@
-pragma solidity ^0.6.0;
+pragma solidity ^0.5.0;
 
-import '@openzeppelin/contracts/token/ERC721/ERC721.sol';
-import '@openzeppelin/contracts/access/Ownable.sol';
-import './MartianAuction.sol';
+import "https://github.com/OpenZeppelin/openzeppelin-contracts/blob/release-v2.5.0/contracts/token/ERC721/ERC721Full.sol";
+import "https://github.com/OpenZeppelin/openzeppelin-contracts/blob/release-v2.5.0/contracts/ownership/Ownable.sol";
+import "./MartianAuction.sol";
 
-contract MartianMarket is ERC721, Ownable {
-    constructor() ERC721("MartianMarket", "MARS") public {}
+contract MartianMarket is ERC721Full, Ownable {
 
-    // cast a payable address for the Martian Development Foundation to be the beneficiary in the auction
-    // this contract is designed to have the owner of this contract (foundation) to pay for most of the function calls
-    // (all but bid and withdraw)
-    address payable foundationAddress = address(uint160(owner()));
+    constructor() ERC721Full("MartianMarket", "MARS") public {}
+
+    using Counters for Counters.Counter;
+
+    Counters.Counter token_ids;
+
+    address payable foundation_address = msg.sender;
 
     mapping(uint => MartianAuction) public auctions;
 
-    function registerLand(string memory tokenURI) public payable onlyOwner {
-        uint _id = totalSupply();
-        _mint(msg.sender, _id);
-        _setTokenURI(_id, tokenURI);
-        createAuction(_id);
+    modifier landRegistered(uint token_id) {
+        require(_exists(token_id), "Land not registered!");
+        _;
     }
 
-    function createAuction(uint tokenId) public onlyOwner {
-        // your code here...
+    function registerLand(string memory uri) public payable onlyOwner {
+        token_ids.increment();
+        uint token_id = token_ids.current();
+        _mint(foundation_address, token_id);
+        _setTokenURI(token_id, uri);
+        createAuction(token_id);
     }
 
-    function endAuction(uint tokenId) public onlyOwner {
-        require(_exists(tokenId), "Land not registered!");
-        MartianAuction auction = getAuction(tokenId);
-        // your code here...
+    function createAuction(uint token_id) public onlyOwner {
+        auctions[token_id] = new MartianAuction(foundation_address);
     }
 
-    function getAuction(uint tokenId) public view returns(MartianAuction auction) {
-        // your code here...
+    function endAuction(uint token_id) public onlyOwner landRegistered(token_id) {
+        MartianAuction auction = auctions[token_id];
+        auction.auctionEnd();
+        safeTransferFrom(owner(), auction.highestBidder(), token_id);
     }
 
-    function auctionEnded(uint tokenId) public view returns(bool) {
-        // your code here...
+    function auctionEnded(uint token_id) public view returns(bool) {
+        MartianAuction auction = auctions[token_id];
+        return auction.ended();
     }
 
-    function highestBid(uint tokenId) public view returns(uint) {
-        // your code here...
+    function highestBid(uint token_id) public view landRegistered(token_id) returns(uint) {
+        MartianAuction auction = auctions[token_id];
+        return auction.highestBid();
     }
 
-    function pendingReturn(uint tokenId, address sender) public view returns(uint) {
-        // your code here...
+    function pendingReturn(uint token_id, address sender) public view landRegistered(token_id) returns(uint) {
+        MartianAuction auction = auctions[token_id];
+        return auction.pendingReturn(sender);
     }
 
-    function bid(uint tokenId) public payable {
-        // your code here...
+    function bid(uint token_id) public payable landRegistered(token_id) {
+        MartianAuction auction = auctions[token_id];
+        auction.bid.value(msg.value)(msg.sender);
     }
 
 }
