@@ -1,12 +1,12 @@
 pragma solidity ^0.5.0;
 
-import '@openzeppelin/contracts/token/ERC721/ERC721Full.sol';
-import '@openzeppelin/contracts/ownership/Ownable.sol';
+import '@openzeppelin/contracts/token/ERC721/ERC721.sol';
+import '@openzeppelin/contracts/access/Ownable.sol';
 import './MartianAuction.sol';
 
-contract MartianMarket is ERC721Full, Ownable {
+contract MartianMarket is ERC721, Ownable {
 
-    constructor() ERC721Full("MartianMarket", "MARS") public {}
+    constructor() ERC721("MartianMarket", "MARS") public {}
 
     using Counters for Counters.Counter;
 
