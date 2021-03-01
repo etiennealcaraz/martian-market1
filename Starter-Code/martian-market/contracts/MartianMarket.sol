@@ -8,50 +8,44 @@ contract MartianMarket is ERC721, Ownable {
 
     constructor() ERC721("MartianMarket", "MARS") public {}
 
-    address payable foundation_address = msg.sender;
+    address payable foundationAddress = address(uint160(owner()));
 
     mapping(uint => MartianAuction) public auctions;
 
-    modifier landRegistered(uint token_id) {
-        require(_exists(token_id), "Land not registered!");
-        _;
-    }
-
     function registerLand(string memory uri) public payable onlyOwner {
-        token_ids.increment();
-        uint token_id = token_ids.current();
-        _mint(foundation_address, token_id);
-        _setTokenURI(token_id, uri);
-        createAuction(token_id);
+        uint _id = totalSupply();
+        _mint(msg.sender, _id);
+        _setTokenURI(_id, tokenURI);
+        createAuction(_id);
     }
 
-    function createAuction(uint token_id) public onlyOwner {
-        auctions[token_id] = new MartianAuction(foundation_address);
+    function createAuction(uint tokenId) public onlyOwner {
+        auctions[tokenId] = new MartianAuction(foundation_address);
     }
 
-    function endAuction(uint token_id) public onlyOwner landRegistered(token_id) {
-        MartianAuction auction = auctions[token_id];
+    function endAuction(uint tokenId) public onlyOwner landRegistered(token_id) {
+        MartianAuction auction = auctions[tokenId];
         auction.auctionEnd();
-        safeTransferFrom(owner(), auction.highestBidder(), token_id);
+        safeTransferFrom(owner(), auction.highestBidder(), tokenId);
     }
 
-    function auctionEnded(uint token_id) public view returns(bool) {
-        MartianAuction auction = auctions[token_id];
+    function auctionEnded(uint tokenId) public view returns(bool) {
+        MartianAuction auction = auctions[tokenId];
         return auction.ended();
     }
 
-    function highestBid(uint token_id) public view landRegistered(token_id) returns(uint) {
-        MartianAuction auction = auctions[token_id];
+    function highestBid(uint tokenId) public view landRegistered(token_id) returns(uint) {
+        MartianAuction auction = auctions[tokenId];
         return auction.highestBid();
     }
 
-    function pendingReturn(uint token_id, address sender) public view landRegistered(token_id) returns(uint) {
-        MartianAuction auction = auctions[token_id];
+    function pendingReturn(uint tokenId, address sender) public view landRegistered(token_id) returns(uint) {
+        MartianAuction auction = auctions[tokenId];
         return auction.pendingReturn(sender);
     }
 
-    function bid(uint token_id) public payable landRegistered(token_id) {
-        MartianAuction auction = auctions[token_id];
+    function bid(uint tokenId) public payable landRegistered(token_id) {
+        MartianAuction auction = auctions[tokenId];
         auction.bid.value(msg.value)(msg.sender);
     }
 
