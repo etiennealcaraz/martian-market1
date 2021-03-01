@@ -20,7 +20,7 @@ contract MartianMarket is ERC721, Ownable {
     }
 
     function createAuction(uint tokenId) public onlyOwner {
-        auctions[tokenId] = new MartianAuction(foundation_address);
+        auctions[tokenId] = new MartianAuction(foundationAddress);
     }
 
     function endAuction(uint tokenId) public onlyOwner {
