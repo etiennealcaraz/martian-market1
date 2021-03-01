@@ -23,7 +23,7 @@ contract MartianMarket is ERC721, Ownable {
         auctions[tokenId] = new MartianAuction(foundation_address);
     }
 
-    function endAuction(uint tokenId) public onlyOwner landRegistered(token_id) {
+    function endAuction(uint tokenId) public onlyOwner landRegistered(tokenId) {
         MartianAuction auction = auctions[tokenId];
         auction.auctionEnd();
         safeTransferFrom(owner(), auction.highestBidder(), tokenId);
@@ -34,17 +34,17 @@ contract MartianMarket is ERC721, Ownable {
         return auction.ended();
     }
 
-    function highestBid(uint tokenId) public view landRegistered(token_id) returns(uint) {
+    function highestBid(uint tokenId) public view landRegistered(tokenId) returns(uint) {
         MartianAuction auction = auctions[tokenId];
         return auction.highestBid();
     }
 
-    function pendingReturn(uint tokenId, address sender) public view landRegistered(token_id) returns(uint) {
+    function pendingReturn(uint tokenId, address sender) public view landRegistered(tokenId) returns(uint) {
         MartianAuction auction = auctions[tokenId];
         return auction.pendingReturn(sender);
     }
 
-    function bid(uint tokenId) public payable landRegistered(token_id) {
+    function bid(uint tokenId) public payable landRegistered(tokenId) {
         MartianAuction auction = auctions[tokenId];
         auction.bid.value(msg.value)(msg.sender);
     }
