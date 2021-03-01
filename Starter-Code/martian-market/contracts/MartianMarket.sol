@@ -8,10 +8,6 @@ contract MartianMarket is ERC721, Ownable {
 
     constructor() ERC721("MartianMarket", "MARS") public {}
 
-    using Counters for Counters.Counter;
-
-    Counters.Counter token_ids;
-
     address payable foundation_address = msg.sender;
 
     mapping(uint => MartianAuction) public auctions;
