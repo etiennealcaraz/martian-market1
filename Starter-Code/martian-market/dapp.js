@@ -1,5 +1,5 @@
-import marsJson from "./contracts/MartianMarket.json";
-import auctionJson from "./contracts/MartianAuction.json";
+import marsJson from "../contracts/MartianMarket.json";
+import auctionJson from "../contracts/MartianAuction.json";
 
 const Web3 = require("web3");
 
